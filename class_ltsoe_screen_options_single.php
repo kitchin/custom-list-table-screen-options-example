@@ -30,7 +30,8 @@ class Ltsoe_Screen_Options_Single {
 	* These hooks are too late: 'admin_menu', 'admin_init', "load-{$hook}".
 	*
 	* Note the globals $plugin_page, $page_hook are not yet set.
-	* Creating the class object only as needed would require parsing $GET['page'] directly in the callback.
+	* Could create the class object only as needed by checking $_GET['page'],
+	* which is done below anyway for the update validator.
 	*
 	* Example:
 	*	$foo = new Ltsoe_Screen_Options_Single(
@@ -43,8 +44,9 @@ class Ltsoe_Screen_Options_Single {
 	*
 	*	string	$option		Name in the wpdb->usermeta table.
 	*	array 	$args		list( label, default ).
+	*   string  $menu_slug	Menu slug used in add_menu_page() or add_submenu_page().
 	*/
-	public function __construct( $option, $args ) {
+	public function __construct( $option, $args, $menu_slug ) {
 
 		if (
 			is_string( $option ) && $option &&
@@ -54,10 +56,12 @@ class Ltsoe_Screen_Options_Single {
 			$this->_option = $option;
 			$this->_args = $args;
 
-			// Validator for saving the option.
-			add_filter( 'set-screen-option', array( $this,
-				'filter__set_screen_option' ), 10, 3
-			);
+			// Validator for saving the options.
+			if ( ! empty( $_GET[ 'page' ] ) && $menu_slug === $_GET[ 'page' ] ) {
+				add_filter( 'set-screen-option', array( $this,			
+					'filter__set_screen_option' ), 10, 3
+				);
+			}
 
 		} else {
 			if ( WP_DEBUG ) wp_die( 'CMSO: bad construct' );
@@ -75,8 +79,8 @@ class Ltsoe_Screen_Options_Single {
 	*
 	* Since this class does not use add_screen_option(), the only reason to wait until
 	* the "load-{$hook}" action is to prevent adding settings to the wrong pages.
-	* An alternative would be to parse $_GET['page'] when before creating the object, and then call ->load() right away.
-	* (Or this code could be moved into __construct(), if it parsed $_GET['page'].)
+	* If checking $_GET['page'] before creating the object, could call ->load() right away.
+	* (Or this code could be moved into __construct() in that case.)
 	*
 	*/
 	public function load() {
@@ -143,12 +147,11 @@ class Ltsoe_Screen_Options_Single {
 
 
 	/*
-	* Validate Screen Option on update.
-	* Called early, then page redirected.
+	* Validate Screen Option on update. Called early, then page redirected.
 	* See set_screen_options() in 'wp-admin/misc.php'.
 	*
-	* May be called with a screen option this class does not own.
-	* Pass through $value!
+	* Note, only set a hook for this function if on the right page (use $_GET[ 'page' ]),
+	* to avoid conflicts with other plugins.
 	*
 	*/
 	public function filter__set_screen_option( $status, $option, $value ) {
@@ -158,11 +161,8 @@ class Ltsoe_Screen_Options_Single {
 			if ( ! ( $value > 0 ) ) {
 				$value = $this->_args[ 'default' ];
 			}
-		} else {
-			// Only for testing, need to pass through:
-			// if ( WP_DEBUG ) wp_die('xx/fsso: not my job');	// xx comment out this line after testing
+			return $value;
 		}
-
-		return $value;
+		return $status;	// = false
 	}
 }

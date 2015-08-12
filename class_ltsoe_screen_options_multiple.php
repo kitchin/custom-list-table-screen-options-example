@@ -29,7 +29,8 @@ class Ltsoe_Screen_Options_Multiple {
 	* but not 'admin_menu', 'admin_init'.)
 	*
 	* Note the globals $plugin_page, $page_hook are not yet set.
-	* Creating the class object only as needed would require parsing $GET['page'] directly in the callback.
+	* Could create the class object only as needed by checking $_GET['page'],
+	* which is done below anyway for the update validator.
 	*
 	* Example:
 	*	$foo = new Ltsoe_Screen_Options_Multiple(
@@ -48,8 +49,9 @@ class Ltsoe_Screen_Options_Multiple {
 	*
 	*	string	$user_meta_name		Name in the wpdb->usermeta table.
 	*	array 	$user_meta_options	list( option => list( label, default ), ... ).
+	*   string  $menu_slug			Menu slug used in add_menu_page() or add_submenu_page().
 	*/
-	public function __construct( $user_meta_name, $user_meta_options ) {
+	public function __construct( $user_meta_name, $user_meta_options, $menu_slug ) {
 
 		if (
 			$user = wp_get_current_user() and
@@ -63,11 +65,13 @@ class Ltsoe_Screen_Options_Multiple {
 			if ( ! is_array( $this->_user_meta_values ) ) {
 				$this->_user_meta_values = array();
 			}
-
+			
 			// Validator for saving the options.
-			add_filter( 'set-screen-option', array( $this,
-				'filter__set_screen_option' ), 10, 3
-			);
+			if ( ! empty( $_GET[ 'page' ] ) && $menu_slug === $_GET[ 'page' ] ) {
+				add_filter( 'set-screen-option', array( $this,
+					'filter__set_screen_option' ), 10, 3
+				);
+			}
 
 		} else {
 			if ( WP_DEBUG ) wp_die( 'CMSO: bad construct' );
@@ -84,8 +88,8 @@ class Ltsoe_Screen_Options_Multiple {
 	*
 	* Since this class does not use add_screen_option(), the only reason to wait until
 	* the "load-{$hook}" action is to prevent adding settings to the wrong pages.
-	* An alternative would be to parse $_GET['page'] when before creating the object, and then call ->load() right away.
-	* (Or this code could be moved into __construct(), if it parsed $_GET['page'].)
+	* If checking $_GET['page'] before creating the object, could call ->load() right away.
+	* (Or this code could be moved into __construct() in that case.)
 	*
 	*/
 	public function load() {
@@ -153,12 +157,11 @@ class Ltsoe_Screen_Options_Multiple {
 
 
 	/*
-	* Validate Screen Options on update.
-	* Called early, then page redirected.
+	* Validate Screen Option on update. Called early, then page redirected.
 	* See set_screen_options() in 'wp-admin/misc.php'.
 	*
-	* May be called with a screen option this class does not own.
-	* Pass through $values!
+	* Note, only set a hook for this function if on the right page (use $_GET[ 'page' ]),
+	* to avoid conflicts with other plugins.
 	*
 	*/
 	public function filter__set_screen_option( $status, $option, $values ) {
@@ -187,16 +190,11 @@ class Ltsoe_Screen_Options_Multiple {
 						$this->_user_meta_values[ $option ] = $value;
 					}
 				}
-				$values = $this->_user_meta_values;
-				// Only for testing, need to continue:
-				// if ( WP_DEBUG ) wp_die('xx/fsso: values:' . htmlspecialchars(print_r($values,1)));	// comment out this line after testing
+				return $this->_user_meta_values;
 			} else {
 				if ( WP_DEBUG ) wp_die('fsso: no input');
 			}
-		} else {
-			// Only for testing, need to pass through:
-			// if ( WP_DEBUG ) wp_die('xx/fsso: not my job');	// comment out this line after testing
 		}
-		return $values;
+		return $status;	// = false
 	}
 }

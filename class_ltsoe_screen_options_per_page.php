@@ -27,7 +27,8 @@ class Ltsoe_Screen_Options_Per_Page {
 	* These hooks are too late: 'admin_menu', 'admin_init', "load-{$hook}".
 	*
 	* Note the globals $plugin_page, $page_hook are not yet set.
-	* Creating the class object only as needed would require parsing $GET['page'] directly in the callback.
+	* Could create the class object only as needed by checking $_GET['page'],
+	* which is done below anyway for the update validator.
 	*
 	* Example:
 	*	$foo = new Ltsoe_Screen_Options_Per_Page(
@@ -39,8 +40,9 @@ class Ltsoe_Screen_Options_Per_Page {
 	*	string	$unique_key			Name in the wpdb->usermeta table.
 	*	string	$label
 	*	int		$default_value
+	*   string  $menu_slug			Menu slug used in add_menu_page() or add_submenu_page().
 	*/
-	public function __construct( $unique_key, $label, $default_value ) {
+	public function __construct( $unique_key, $label, $default_value, $menu_slug ) {
 
 		if (
 			is_string( $unique_key ) && $unique_key &&
@@ -52,10 +54,12 @@ class Ltsoe_Screen_Options_Per_Page {
 			$this->_label = $label;
 			$this->_default_value = $default_value;
 
-			// Validator for saving the option.
-			add_filter( 'set-screen-option', array( $this,
-				'filter__set_screen_option' ), 10, 3
-			);
+			// Validator for saving the options.
+			if ( ! empty( $_GET[ 'page' ] ) && $menu_slug === $_GET[ 'page' ] ) {
+				add_filter( 'set-screen-option', array( $this,			
+					'filter__set_screen_option' ), 10, 3
+				);
+			}
 
 		} else {
 			if ( WP_DEBUG ) wp_die( 'CMSO: bad construct' );
@@ -68,7 +72,7 @@ class Ltsoe_Screen_Options_Per_Page {
 	* Set up after WP does set_current_screen() in 'wp-admin/admin.php'.
 	*
 	* Call '->load()' in a callback using add_action( "load-{$hook}", callback ),
-	* where $hook = add_submenu_page(...).
+	* where $hook = add_submenu_page(...). 
 	* Note, $hook is the same as the global $page_hook.
 	*
 	*/
@@ -91,12 +95,11 @@ class Ltsoe_Screen_Options_Per_Page {
 
 
 	/*
-	* Validate Screen Option on update.
-	* Called early, then page redirected.
+	* Validate Screen Option on update. Called early, then page redirected.
 	* See set_screen_options() in 'wp-admin/misc.php'.
 	*
-	* May be called with a screen option this class does not own.
-	* Pass through $value!
+	* Note, only set a hook for this function if on the right page (use $_GET[ 'page' ]),
+	* to avoid conflicts with other plugins.
 	*
 	*/
 	public function filter__set_screen_option( $status, $option, $value ) {
@@ -106,11 +109,8 @@ class Ltsoe_Screen_Options_Per_Page {
 			if ( ! ( $value > 0 ) ) {
 				$value = $this->_default_value;
 			}
-		} else {
-			// Only for testing, need to pass through:
-			// if ( WP_DEBUG ) wp_die('xx/fsso: not my job');	// comment out this line after testing
+			return $value;
 		}
-
-		return $value;
+		return $status;	// = false
 	}
 }

@@ -3,13 +3,13 @@
 Plugin Name: Custom List Table Screen Options Example
 Plugin URI: https://github.com/kitchin/custom-list-table-screen-options-example
 Description: Sample code for showing the Screen Options tab. Requires the plugin Custom List Table Example (ver. 1.3 works, WP 4.2.4). Adds subpages to the menu item List Table Example. See source for details.
-Version: 1.3
+Version: 1.3.1
 Author: Kitchin
 License: GPL2
 */
 
 /*
-* Readme
+* Readme, 2015/08/11.
 *
 * See the included classes for an explanation of the hook timing involved in WP Screen Options.
 *
@@ -63,30 +63,36 @@ function ltsoe_action__plugins_loaded() {
 		// Missing plugin Custom List Table Example?
 		return;
 	}
+	
 
 	// 1. Using hooks at the right time, WP shows Screen Options for columns automatically.
 	$ltsoe_screen_options[ 'columns_only' ] = '';
 
 	// 2. Add 'per_page' to the Screen Options. WP has automatic code for this as well.
 	require_once( dirname(__FILE__) . '/class_ltsoe_screen_options_per_page.php' );
+	$menu_slug = 'ltsoe_tt_list_test_per_page';
 	$ltsoe_screen_options[ 'per_page' ] = new Ltsoe_Screen_Options_Per_Page(
 		'ltsoe_books_per_page',
 		'Books per page',
-		10
+		10,
+		$menu_slug
 	);
 
 	// 3. Add a single custom option to the Screen Options. WP has less code for this.
 	require_once( dirname(__FILE__) . '/class_ltsoe_screen_options_single.php' );
+	$menu_slug = 'ltsoe_tt_list_test_single';
 	$ltsoe_screen_options[ 'single' ] = new Ltsoe_Screen_Options_Single(
 		'ltsoe_books_single',
 		array(
 			'label' => 'Books single',
 			'default' => 10,
-		)
+		),
+		$menu_slug
 	);
 
 	// 4. Add multiple custom options to the Screen Options. Not much harder.
 	require_once( dirname(__FILE__) . '/class_ltsoe_screen_options_multiple.php' );
+	$menu_slug = 'ltsoe_tt_list_test_multiple';
 	$ltsoe_screen_options[ 'multiple' ] = new Ltsoe_Screen_Options_Multiple(
 		'ltsoe_books_multiple',
 		array(
@@ -98,7 +104,8 @@ function ltsoe_action__plugins_loaded() {
 				 'label' => 'Show book details',
 				 'default' => 1,
 			),
-		)
+		),
+		$menu_slug
 	);
 }
 
