@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Custom List Table Screen Options Example
-Plugin URI:
+Plugin URI: https://github.com/kitchin/custom-list-table-screen-options-example
 Description: Sample code for showing the Screen Options tab. Requires the plugin Custom List Table Example (ver. 1.3 works, WP 4.2.4). Adds subpages to the menu item List Table Example. See source for details.
 Version: 1.3
 Author: Kitchin
