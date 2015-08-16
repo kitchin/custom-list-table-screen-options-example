@@ -4,7 +4,7 @@
 * Add a single custom option to the Screen Options tab in a List Table.
 * The option should *not* have one of the standard names: 'per_page', 'layout_columns'.
 *
-* To use this class, create the object early (at the latest, hook 'wp_load'),
+* To use this class, create the object early (at the latest, hook 'wp_loaded'),
 * and then call '->load()' in the late hook "load-{$page_hook}".
 *
 * This class does not handle 'per_page', which should be done using add_screen_option().
@@ -58,7 +58,7 @@ class Ltsoe_Screen_Options_Single {
 
 			// Validator for saving the options.
 			if ( ! empty( $_GET[ 'page' ] ) && $menu_slug === $_GET[ 'page' ] ) {
-				add_filter( 'set-screen-option', array( $this,			
+				add_filter( 'set-screen-option', array( $this,
 					'filter__set_screen_option' ), 10, 3
 				);
 			}

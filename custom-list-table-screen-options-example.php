@@ -3,9 +3,18 @@
 Plugin Name: Custom List Table Screen Options Example
 Plugin URI: https://github.com/kitchin/custom-list-table-screen-options-example
 Description: Sample code for showing the Screen Options tab. Requires the plugin Custom List Table Example (ver. 1.3 works, WP 4.2.4). Adds subpages to the menu item List Table Example. See source for details.
-Version: 1.3.1
+Version: 1.3.2
 Author: Kitchin
 License: GPL2
+*/
+
+/*
+* Changelog
+*
+* 1.3.2 : Doc fix only. [2015/08/15]
+* 1.3.1 : Fix update filter restriction. [2015/08/11]
+* 1.3 : Inital release, version number to match plugin Custom List Table Example ver 1.3. [2015/08/11]
+*
 */
 
 /*
@@ -21,6 +30,12 @@ License: GPL2
 *
 * This plugin saves options but does not use them.
 * For example, per_page will NOT change the rows displayed per page.
+*
+* Added readme, 2015/08/15.
+*
+* Note, Custom List Table Example loads the WP @private class WP_List_Table.
+* Might be better to work with a frozen local copy of class. And all styles and scripts!
+* Classes and td/th will change in WP 4.3, for example.
 *
 */
 
@@ -63,7 +78,7 @@ function ltsoe_action__plugins_loaded() {
 		// Missing plugin Custom List Table Example?
 		return;
 	}
-	
+
 
 	// 1. Using hooks at the right time, WP shows Screen Options for columns automatically.
 	$ltsoe_screen_options[ 'columns_only' ] = '';

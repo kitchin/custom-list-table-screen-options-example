@@ -4,7 +4,7 @@
 * Add multiple options to the Screen Options tab in a List Table.
 * The user_meta_name should *not* have one of the standard names: 'per_page', 'layout_columns'.
 *
-* To use this class, create the object early (at the latest, hook 'wp_load'),
+* To use this class, create the object early (at the latest, hook 'wp_loaded'),
 * and then call '->load()' in the late hook "load-{$page_hook}".
 *
 * This class carries its own private data, instead of using add_screen_option().
@@ -65,7 +65,7 @@ class Ltsoe_Screen_Options_Multiple {
 			if ( ! is_array( $this->_user_meta_values ) ) {
 				$this->_user_meta_values = array();
 			}
-			
+
 			// Validator for saving the options.
 			if ( ! empty( $_GET[ 'page' ] ) && $menu_slug === $_GET[ 'page' ] ) {
 				add_filter( 'set-screen-option', array( $this,

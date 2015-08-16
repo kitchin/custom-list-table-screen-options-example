@@ -3,7 +3,7 @@
 /*
 * Add a 'per_page' option to the Screen Options tab in a List Table.
 *
-* To use this class, create the object early (at the latest, hook 'wp_load'),
+* To use this class, create the object early (at the latest, hook 'wp_loaded'),
 * and then call '->load()' in the late hook "load-{$page_hook}".
 *
 * Using add_screen_option(), the option 'per_page' gets special treatment in
@@ -56,7 +56,7 @@ class Ltsoe_Screen_Options_Per_Page {
 
 			// Validator for saving the options.
 			if ( ! empty( $_GET[ 'page' ] ) && $menu_slug === $_GET[ 'page' ] ) {
-				add_filter( 'set-screen-option', array( $this,			
+				add_filter( 'set-screen-option', array( $this,
 					'filter__set_screen_option' ), 10, 3
 				);
 			}
@@ -72,7 +72,7 @@ class Ltsoe_Screen_Options_Per_Page {
 	* Set up after WP does set_current_screen() in 'wp-admin/admin.php'.
 	*
 	* Call '->load()' in a callback using add_action( "load-{$hook}", callback ),
-	* where $hook = add_submenu_page(...). 
+	* where $hook = add_submenu_page(...).
 	* Note, $hook is the same as the global $page_hook.
 	*
 	*/
